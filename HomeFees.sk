@@ -1,0 +1,91 @@
+#Autor: NoutLost_
+#Credits: Please do not reupload without permission!
+#Feel free to give suggestions in the discussions or message me via discord (NoutLost_#7665)
+
+options:
+  #Fee for creating a home
+  setfee: 100
+
+  #Fee for teleporting per block away from home. (so fee x distance)
+  tpfee: 2
+
+  #maximum amount of homes. Type 0 for infinity homes
+  maxhomes: 5
+
+  sethome: &7[&fHome&6Fees&7] &fsuccesfully set home to
+  homespecify: &7[&fHome&6Fees&7] &fPlease specify a named for your home!
+  alreadyused: &7[&fHome&6Fees&7] &fYou have already used that name!
+  maxhome: &7[&fHome&6Fees&7] &fYou have the max amount of homes!
+  deleted: &7[&fHome&6Fees&7] &fSuccesfully deleted home
+  homelist: &7[&fHome&6Fees&7] &f&6Your home list
+  teleported: &7[&fHome&6Fees&7] &fsuccesfully teleported to home
+  nomoney: &7[&fHome&6Fees&7] &fYou do not have enough money!
+  nothome: &7[&fHome&6Fees&7] &fThat is not a know home! /homelist
+  nohomes: &7[&fHome&6Fees&7] &fYou do not have any homes! /sethome [<name>]
+
+function setHome(p: player, t: text, f: text):
+  set {homen::%{_p}'s uuid%::%{_t}%} to {_t}
+  set {homes::%{_p}'s uuid%::%{_t}%} to {_p}'s location
+  send "{@sethome}: &6%{_t}%" to {_p}
+  remove {_f} from {_p}'s balance
+
+command /sethome [<text>]:
+  trigger:
+    if arg-1 is set:
+      loop {homen::%player's uuid%::*}:
+        if {homen::%player's uuid%::%loop-value%} is arg-1:
+          send "{@alreadyused}"
+          stop
+        add 1 to {_counter}
+      if {_counter} = 0:
+        set {fee::%player%} to {@setfee}
+      else:
+        set {fee::%player%} to {@setfee} * {_counter} + {@setfee}
+      if {@maxhomes} = 0:
+        setHome(player, arg-1, {fee::%player%})
+        stop
+      else if {_counter} >= {@maxhomes}:
+        send "{@maxhome}"
+        stop
+      setHome(player, arg-1, {fee::%player%})
+    else:
+      send "{@homespecify}"
+
+command /delhome [<text>]:
+  aliases: /deletehome
+  trigger:
+    if {homen::%player's uuid%::%arg-1%} is set:
+      delete {homes::%player's uuid%::%arg-1%}
+      delete {homen::%player's uuid%::%arg-1%}
+      send "{@deleted}: %arg-1%"
+    else:
+      send "{@nothome}"
+
+command /homelist:
+  trigger:
+    if {homen::%player's uuid%::*} is set:
+      send ""
+      send "{@homelist}:"
+      loop {homen::%player's uuid%::*}:
+        add 1 to {_int}
+        send "&6%{_int}%: &f%{homen::%player's uuid%::%loop-value%}%"
+      send ""
+    else:
+      send "{@nohomes}"
+
+command /home [<text>]:
+  trigger:
+    if {homen::%player's uuid%::*} is set:
+      if {homen::%player's uuid%::%arg-1%} is set:
+        set {_dis} to distance between player's location and {homes::%player's uuid%::%arg-1%}
+        set {_fee} to {@tpfee} * {_dis}
+        if {_fee} <= player's balance:
+          teleport player to {homes::%player's uuid%::%arg-1%}
+          remove {_fee} from player's balance
+          send "{@teleported}: &6%arg-1%&f, for &6$%{_fee}%"
+        else:
+          send "{@nomoney}"
+      else:
+        send "{@nothome}"
+    else:
+      send "{@nohomes}"
