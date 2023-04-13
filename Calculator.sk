@@ -1,0 +1,144 @@
+command /calc [<text>]:
+  aliases: /calculator
+  trigger:
+    if arg-1 is set:
+      set {_txt} to arg-1
+      set {_n} to {_txt} parsed as integer
+      set {_i} to 0
+      if {n::%player%} isn't set:
+        set {n::%player%} to 0
+      if {_n} is set:
+        if mod({n::%player%}, 2) = 0:
+          add {_n} to {equation::%player%::*}
+          add 1 to {n::%player%}
+          loop {equation::%player%::*}:
+            if {_i} > 0:
+              set {_bar} to "%{_bar}% %loop-value%"
+              add 1 to {_i}
+            else:
+              set {_bar} to "%loop-value%"
+              add 1 to {_i}
+          send action bar {_bar} to player
+        else:
+          send "You must type an operator first!"
+      else:
+        if {_txt} is "+":
+          if mod({n::%player%}, 2) = 1:
+            add {_txt} to {equation::%player%::*}
+            add 1 to {n::%player%}
+            loop {equation::%player%::*}:
+              if {_i} > 0:
+                set {_bar} to "%{_bar}% %loop-value%"
+                add 1 to {_i}
+              else:
+                set {_bar} to "%loop-value%"
+                add 1 to {_i}
+            if {_calc} is set:
+              send action bar "Calculation: &6%{_equation}% &7= &a%{_calc}%" to player
+            else:
+              send action bar "Calculation: &6%{_equation}% &7= &cError" to player
+        if {_txt} is "-":
+          if mod({n::%player%}, 2) = 1:
+            add {_txt} to {equation::%player%::*}
+            add 1 to {n::%player%}
+            loop {equation::%player%::*}:
+              if {_i} > 0:
+                set {_bar} to "%{_bar}% %loop-value%"
+                add 1 to {_i}
+              else:
+                set {_bar} to "%loop-value%"
+                add 1 to {_i}
+            if {_calc} is set:
+              send action bar "Calculation: &6%{_equation}% &7= &a%{_calc}%" to player
+            else:
+              send action bar "Calculation: &6%{_equation}% &7= &cError" to player
+        if {_txt} is "*":
+          if mod({n::%player%}, 2) = 1:
+            add {_txt} to {equation::%player%::*}
+            add 1 to {n::%player%}
+            loop {equation::%player%::*}:
+              if {_i} > 0:
+                set {_bar} to "%{_bar}% %loop-value%"
+                add 1 to {_i}
+              else:
+                set {_bar} to "%loop-value%"
+                add 1 to {_i}
+            if {_calc} is set:
+              send action bar "Calculation: &6%{_equation}% &7= &a%{_calc}%" to player
+            else:
+              send action bar "Calculation: &6%{_equation}% &7= &cError" to player
+        if {_txt} is "/":
+          if mod({n::%player%}, 2) = 1:
+            add {_txt} to {equation::%player%::*}
+            add 1 to {n::%player%}
+            loop {equation::%player%::*}:
+              if {_i} > 0:
+                set {_bar} to "%{_bar}% %loop-value%"
+                add 1 to {_i}
+              else:
+                set {_bar} to "%loop-value%"
+                add 1 to {_i}
+            if {_calc} is set:
+              send action bar "Calculation: &6%{_equation}% &7= &a%{_calc}%" to player
+            else:
+              send action bar "Calculation: &6%{_equation}% &7= &cError" to player
+        if {_txt} is "=":
+          loop {equation::%player%::*}:
+            if {_i} > 0:
+              set {_equation} to "%{_equation}% %loop-value%"
+              add 1 to {_i}
+            else:
+              set {_equation} to "%loop-value%"
+              add 1 to {_i}
+          evaluate "set {_calc} to %{_equation}%"
+          if {_calc} is set:
+            send "Calculation: &6%{_equation}% &7= &a%{_calc}%"
+            send action bar "Calculation: &6%{_equation}% &7= &a%{_calc}%" to player
+          else:
+            send "Calculation: &6%{_equation}% &7= &cError"
+            send action bar "Calculation: &6%{_equation}% &7= &cError" to player
+        if {_txt} is "reset":
+          delete {equation::%player%::*}
+          delete {n::%player%}
+    else:
+      loop {equation::%player%::*}:
+        if {_i} > 0:
+          set {_equation} to "%{_equation}% %loop-value%"
+          add 1 to {_i}
+        else:
+          set {_equation} to "%loop-value%"
+          add 1 to {_i}
+      evaluate "set {_calc} to %{_equation}%"
+      if {_calc} is set:
+        send "Calculation: &6%{_equation}% &7= &a%{_calc}%"
+        send action bar "Calculation: &6%{_equation}% &7= &a%{_calc}%" to player
+      else:
+        send "Calculation: &6%{_equation}% &7= &cError"
+        send action bar "Calculation: &6%{_equation}% &7= &cError" to player
+
+command /toggleloop:
+  permission: op
+  trigger:
+    if {calcloop} is true:
+      set {calcloop} to false
+      send "Loop mode &cdisabled"
+    else:
+      set {calcloop} to true
+      send "Loop mode &aenabled"
+
+every 2 seconds:
+  if {calcloop} is true:
+    loop all players:
+      if {equation::%loop-player%::*} is set:
+        loop {equation::%loop-player%::*}:
+          if {_i} > 0:
+            set {_equation} to "%{_equation}% %loop-value-2%"
+            add 1 to {_i}
+          else:
+            set {_equation} to "%loop-value-2%"
+            add 1 to {_i}
+        evaluate "set {_calc} to %{_equation}%"
+        if {_calc} is set:
+          send action bar "Calculation: &6%{_equation}% &7= &a%{_calc}%" to loop-player
+        else:
+          send action bar "Calculation: &6%{_equation}% &7= &cError" to loop-player
